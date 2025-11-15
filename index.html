@@ -26,31 +26,32 @@
         </svg>
       </div>
       <div class="title-container">
-        <div class="title">EcoLixo</div>
-        <div class="subtitle">Simulador de coleta inteligente</div>
+        <div class="title" data-i18n="appTitle">EcoLixo</div>
+        <div class="subtitle" data-i18n="subtitle">Simulador de coleta inteligente</div>
       </div>
       <div class="header-buttons">
-        <button id="toggleTheme" class="btn btn-tiny btn-ghost" title="Alternar tema">🌗</button>
+        <button id="toggleTheme" class="btn btn-tiny btn-ghost" data-i18n-title="toggleThemeTitle" title="Alternar tema">🌗</button>
+        <button id="toggleLanguage" class="btn btn-tiny btn-ghost"></button>
       </div>
     </header>
 
     <main>
       <!-- Home Screen -->
-      <section id="home" class="screen visible" role="region" aria-label="Home">
+      <section id="home" class="screen visible" role="region" data-i18n-aria-label="homeAriaLabel" aria-label="Home">
         <div class="card">
           <div id="map" class="map"></div>
-          <div class="dica" id="dicaEducacional">Dica: carregando...</div>
+          <div class="dica" id="dicaEducacional" data-i18n="dicaLoading">Dica: carregando...</div>
         </div>
         <div class="button-group column">
-          <button class="btn btn-primary" id="btnOpenCamera">📸 Reconhecer Resíduo</button>
-          <button class="btn btn-ghost" id="btnOpenPerfil">📊 Ver Meu Impacto</button>
+          <button class="btn btn-primary" id="btnOpenCamera" data-i18n="recognizeWaste">📸 Reconhecer Resíduo</button>
+          <button class="btn btn-ghost" id="btnOpenPerfil" data-i18n="viewImpact">📊 Ver Meu Impacto</button>
         </div>
       </section>
 
       <!-- Camera / Upload Screen -->
-      <section id="camera" class="screen" role="region" aria-label="Camera" hidden>
-        <h3>Identifique o resíduo</h3>
-        <p class="dica">Tire uma foto ou selecione uma imagem do resíduo, em seguida preencha os detalhes para simular o reconhecimento.</p>
+      <section id="camera" class="screen" role="region" data-i18n-aria-label="cameraAriaLabel" aria-label="Camera" hidden>
+        <h3 data-i18n="identifyWaste">Identifique o resíduo</h3>
+        <p class="dica" data-i18n="cameraDica">Tire uma foto ou selecione uma imagem do resíduo, em seguida preencha os detalhes para simular o reconhecimento.</p>
         
         <!-- Contêiner para preview (vídeo ou imagem) -->
         <div class="preview-container">
@@ -58,19 +59,19 @@
           <img id="photoPreview" class="hidden" alt="Preview da foto selecionada ou capturada">
           <div class="loading-preview hidden" id="loadingPreview">
             <div class="spinner"></div>
-            <p>Carregando preview...</p>
+            <p data-i18n="loadingPreview">Carregando preview...</p>
           </div>
         </div>
         
         <div class="button-group mb-12">
-          <button id="btnStartCamera" class="btn btn-primary" aria-label="Iniciar câmera">Iniciar Câmera</button>
-          <input type="file" id="fotoInput" accept="image/*" class="hidden" aria-label="Selecionar arquivo de imagem">
-          <button id="btnSelectFile" class="btn btn-ghost" aria-label="Selecionar arquivo">Selecionar Arquivo</button>
+          <button id="btnStartCamera" class="btn btn-primary" data-i18n-aria-label="startCamera" aria-label="Iniciar câmera" data-i18n="startCamera">Iniciar Câmera</button>
+          <input type="file" id="fotoInput" accept="image/*" class="hidden" data-i18n-aria-label="selectFileAria" aria-label="Selecionar arquivo de imagem">
+          <button id="btnSelectFile" class="btn btn-ghost" data-i18n-aria-label="selectFile" aria-label="Selecionar arquivo" data-i18n="selectFile">Selecionar Arquivo</button>
         </div>
 
         <!-- Formulário para entrada manual -->
         <div id="residueForm" class="form-group hidden mt-12">
-          <label for="tipoResiduo">Tipo de resíduo:</label>
+          <label for="tipoResiduo" data-i18n="wasteType">Tipo de resíduo:</label>
           <select id="tipoResiduo">
             <option value="0">Plástico</option>
             <option value="1">Papel</option>
@@ -80,18 +81,18 @@
             <option value="5">Eletrônicos</option>
           </select>
 
-          <label>Umidade:</label>
+          <label data-i18n="humidity">Umidade:</label>
           <div class="radio-group">
-            <input type="radio" id="seco" name="umidade" value="seco" checked>
-            <label for="seco">Seco</label>
-            <input type="radio" id="umido" name="umidade" value="umido">
-            <label for="umido">Úmido</label>
+            <input type="radio" id="dry" name="umidade" value="dry" checked>
+            <label for="dry" data-i18n="dry">Seco</label>
+            <input type="radio" id="wet" name="umidade" value="wet">
+            <label for="wet" data-i18n="wet">Úmido</label>
           </div>
 
-          <label for="quantidade">Quantidade (kg):</label>
+          <label for="quantidade" data-i18n="quantity">Quantidade (kg):</label>
           <input type="number" id="quantidade" step="0.01" min="0.01" value="1">
 
-          <button id="btnIdentificar" class="btn btn-primary mt-12" disabled>Identificar</button>
+          <button id="btnIdentificar" class="btn btn-primary mt-12" data-i18n="identify" disabled>Identificar</button>
         </div>
 
         <div class="loading" id="loadingProcess">
@@ -101,50 +102,50 @@
       </section>
 
       <!-- Resultado -->
-      <section id="resultado" class="screen" role="region" aria-label="Resultado" hidden>
-        <h3>Resultado da Identificação</h3>
-        <img id="fotoMostrada" class="foto-preview" alt="Foto do resíduo" src="" aria-hidden="true">
+      <section id="resultado" class="screen" role="region" data-i18n-aria-label="resultadoAriaLabel" aria-label="Resultado" hidden>
+        <h3 data-i18n="identificationResult">Resultado da Identificação</h3>
+        <img id="fotoMostrada" class="foto-preview" data-i18n-alt="wastePhotoAlt" alt="Foto do resíduo" src="" aria-hidden="true">
         <p id="tipoLixo" class="dica"></p>
         <p id="lixeira" class="dica"></p>
         <p id="dicaResultado" class="dica"></p>
         <div class="button-group mt-12">
-          <button id="btnConfirmar" class="btn btn-primary">Confirmar descarte</button>
-          <button id="btnResultadoVoltar" class="btn btn-ghost">Voltar</button>
+          <button id="btnConfirmar" class="btn btn-primary" data-i18n="confirmDisposal">Confirmar descarte</button>
+          <button id="btnResultadoVoltar" class="btn btn-ghost" data-i18n="back">Voltar</button>
         </div>
       </section>
 
       <!-- Recompensa -->
-      <section id="recompensa" class="screen" role="region" aria-label="Recompensa" hidden>
-        <h3>Parabéns! 🎉</h3>
+      <section id="recompensa" class="screen" role="region" data-i18n-aria-label="recompensaAriaLabel" aria-label="Recompensa" hidden>
+        <h3 data-i18n="congratulations">Parabéns! 🎉</h3>
         <div class="card">
           <div id="pontosTexto" class="num"></div>
           <div id="co2Texto" class="dica"></div>
         </div>
         <div class="button-group mt-12">
-          <button id="btnVerPerfil" class="btn btn-primary">Ver impacto</button>
-          <button id="btnRecompensaHome" class="btn btn-ghost">Voltar à Home</button>
+          <button id="btnVerPerfil" class="btn btn-primary" data-i18n="viewImpactBtn">Ver impacto</button>
+          <button id="btnRecompensaHome" class="btn btn-ghost" data-i18n="backHome">Voltar à Home</button>
         </div>
       </section>
 
       <!-- Perfil -->
-      <section id="perfil" class="screen" role="region" aria-label="Perfil" hidden>
-        <h3>Seu Impacto Ambiental</h3>
+      <section id="perfil" class="screen" role="region" data-i18n-aria-label="perfilAriaLabel" aria-label="Perfil" hidden>
+        <h3 data-i18n="yourImpact">Seu Impacto Ambiental</h3>
         <div class="chart-container">
-          <canvas id="graficoCO2" aria-label="Gráfico CO2"></canvas>
+          <canvas id="graficoCO2" data-i18n-aria-label="co2AvoidedLabel" aria-label="Gráfico CO2"></canvas>
         </div>
         <div class="stats">
           <div class="stat">
             <div class="num" id="totalCO2">0</div>
-            <div class="dica">kg CO₂ evitado</div>
+            <div class="dica" data-i18n="kgCo2Avoided">kg CO₂ evitado</div>
           </div>
           <div class="stat">
             <div class="num" id="totalPontos">0</div>
-            <div class="dica">pontos</div>
+            <div class="dica" data-i18n="points">pontos</div>
           </div>
         </div>
         <div class="button-group mt-12">
-          <button id="btnReset" class="btn btn-ghost">Resetar dados</button>
-          <button id="btnPerfilHome" class="btn btn-ghost">Voltar</button>
+          <button id="btnReset" class="btn btn-ghost" data-i18n="resetData">Resetar dados</button>
+          <button id="btnPerfilHome" class="btn btn-ghost" data-i18n="backBtn">Voltar</button>
         </div>
       </section>
     </main>
@@ -153,18 +154,18 @@
     <div id="confetti" aria-hidden="true"></div>
 
     <!-- Bottom navigation (sempre visível) -->
-    <nav class="bottom-nav" role="navigation" aria-label="Navegação principal">
+    <nav class="bottom-nav" role="navigation" data-i18n-aria-label="mainNav" aria-label="Navegação principal">
       <div class="nav-item active" data-target="home" id="navHome" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="dica">Home</span>
+        <span class="dica" data-i18n="home">Home</span>
       </div>
       <div class="nav-item" data-target="camera" id="navCamera">
         <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h4l2-2h4l2 2h4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="dica">Foto</span>
+        <span class="dica" data-i18n="photo">Foto</span>
       </div>
       <div class="nav-item" data-target="perfil" id="navPerfil">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="dica">Perfil</span>
+        <span class="dica" data-i18n="profile">Perfil</span>
       </div>
     </nav>
 
