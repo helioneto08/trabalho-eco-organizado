@@ -155,7 +155,8 @@ main {
 
 .map {
   width: 100%;
-  height: 180px;
+  height: 40vh; /* Ajustado para ser responsivo com a tela */
+  min-height: 300px; /* Mínimo para não ficar muito pequeno em telas pequenas */
   border-radius: 12px;
   animation: fadeIn 1s ease-in-out;
 }
@@ -410,7 +411,7 @@ nav.bottom-nav {
 }
 
 @media (max-width: 420px) {
-  .map { height: 140px; }
+  .map { height: 30vh; min-height: 240px; }
   .foto-preview, .preview-container { height: 180px; }
   header.appbar { padding: 8px; }
   .title { font-size: 1rem; }

@@ -59,18 +59,24 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 }
 
 function initMap() {
-  mapInstance = L.map('map').setView([-20.22, -40.32], 11); // Centro ajustado para cobrir Vitória e Serra, zoom 11
+  mapInstance = L.map('map').setView([-20.22, -40.32], 11); // Centro ajustado para cobrir Vitória e Serra
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(mapInstance);
 
   // Adiciona marcadores para todos os pontos
   const markers = [];
+  const bounds = L.latLngBounds(); // Para ajustar o zoom automaticamente
   pontosColeta.forEach(ponto => {
-    const marker = L.marker([ponto.lat, ponto.lng]).addTo(mapInstance)
+    const latLng = [ponto.lat, ponto.lng];
+    const marker = L.marker(latLng).addTo(mapInstance)
       .bindPopup(`<b>${ponto.nome}</b><br>${ponto.coleta}<br>Telefone: ${ponto.telefone}<br>Endereço: ${ponto.endereco}`);
     markers.push({ marker, lat: ponto.lat, lng: ponto.lng, nome: ponto.nome });
+    bounds.extend(latLng); // Adiciona ao bounds
   });
+
+  // Ajusta o mapa para mostrar todos os pontos inicialmente
+  mapInstance.fitBounds(bounds, { padding: [50, 50] });
 
   // Função para obter localização do usuário e encontrar o mais próximo
   function getUserLocationAndFindNearest() {
@@ -100,9 +106,9 @@ function initMap() {
             // Destaca o mais próximo com ícone diferente
             nearest.marker.setIcon(L.divIcon({ className: 'nearest-marker', html: '<div style="background: red; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>' }));
             nearest.marker.openPopup();
-            // Centraliza o mapa entre usuário e o mais próximo
-            const bounds = L.latLngBounds([[userLat, userLng], [nearest.lat, nearest.lng]]);
-            mapInstance.fitBounds(bounds, { padding: [50, 50] });
+            // Centraliza o mapa entre usuário e o mais próximo, incluindo todos os bounds
+            const userBounds = bounds.extend([userLat, userLng]);
+            mapInstance.fitBounds(userBounds, { padding: [50, 50] });
             // Atualiza a dica educacional com info do mais próximo
             $('#dicaEducacional').textContent = `Ponto mais próximo: ${nearest.nome} (${minDist.toFixed(2)} km de distância).`;
           }
@@ -139,7 +145,12 @@ function showScreen(id) {
   $all('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.target === id));
   if (id === 'perfil') atualizarPerfil();
   if (id !== 'camera' && videoStream) stopCamera();
-  if (id === 'home' && !mapInstance) initMap(); // Inicia mapa só se necessário
+  if (id === 'home') {
+    if (!mapInstance) initMap();
+    else {
+      setTimeout(() => mapInstance.invalidateSize(), 100); // Invalida tamanho se tela foi reexibida
+    }
+  }
 }
 
 function getCorLixeira(nome) {
