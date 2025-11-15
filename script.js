@@ -273,7 +273,10 @@ async function identificarResiduo() {
   const umidade = document.querySelector('input[name="umidade"]:checked')?.value;
   const quantidade = parseFloat($('#quantidade').value);
 
-  if (isNaN(quantidade) || quantidade <= 0) return showError('Quantidade deve ser um número positivo.');
+  if (isNaN(quantidade) || quantidade <= 0) {
+    loadingEl.classList.remove('visible');
+    return showError('Quantidade deve ser um número positivo.');
+  }
 
   const res = residuos[tipoIdx];
   const isOrganico = res.tipo === 'Orgânico';
@@ -285,8 +288,13 @@ async function identificarResiduo() {
 
   const compressedBlob = await compressImage(fotoSelecionada);
   const previewUrl = URL.createObjectURL(compressedBlob);
-  $('#fotoMostrada').src = previewUrl;
-  URL.revokeObjectURL(previewUrl);
+
+  // Set src e revoga só após onload
+  const fotoMostrada = $('#fotoMostrada');
+  fotoMostrada.src = previewUrl;
+  fotoMostrada.onload = () => {
+    URL.revokeObjectURL(previewUrl); // Revoga após carregar
+  };
 
   resultadoAtual = {
     ...res,
