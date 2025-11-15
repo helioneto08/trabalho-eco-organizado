@@ -49,14 +49,14 @@
 
       <!-- Camera / Upload Screen -->
       <section id="camera" class="screen" role="region" aria-label="Camera" hidden>
-        <h3>Simule a foto do resíduo</h3>
-        <p class="dica">Use a câmera ou selecione uma foto. O processamento usa IA real via Hugging Face se a chave API for configurada, caso contrário, simula localmente.</p>
+        <h3>Identifique o resíduo</h3>
+        <p class="dica">Tire uma foto ou selecione uma imagem do resíduo, em seguida preencha os detalhes para simular o reconhecimento.</p>
         
         <!-- Contêiner para preview (vídeo ou imagem) -->
         <div class="preview-container">
-          <video id="cameraPreview" autoplay playsinline></video> <!-- Adicionado playsinline para compatibilidade mobile -->
+          <video id="cameraPreview" autoplay playsinline></video>
           <img id="photoPreview" class="hidden" alt="Preview da foto selecionada ou capturada">
-          <div class="loading-preview hidden" id="loadingPreview"> <!-- Spinner para compressão -->
+          <div class="loading-preview hidden" id="loadingPreview">
             <div class="spinner"></div>
             <p>Carregando preview...</p>
           </div>
@@ -67,9 +67,33 @@
           <input type="file" id="fotoInput" accept="image/*" class="hidden" aria-label="Selecionar arquivo de imagem">
           <button id="btnSelectFile" class="btn btn-ghost" aria-label="Selecionar arquivo">Selecionar Arquivo</button>
         </div>
-        <div class="button-group mt-12">
-          <button id="btnProcessar" class="btn btn-primary" disabled aria-label="Processar imagem com IA">Processar com IA</button>
+
+        <!-- Formulário para entrada manual -->
+        <div id="residueForm" class="form-group hidden mt-12">
+          <label for="tipoResiduo">Tipo de resíduo:</label>
+          <select id="tipoResiduo">
+            <option value="0">Plástico</option>
+            <option value="1">Papel</option>
+            <option value="2">Orgânico</option>
+            <option value="3">Vidro</option>
+            <option value="4">Metal</option>
+            <option value="5">Eletrônicos</option>
+          </select>
+
+          <label>Umidade:</label>
+          <div class="radio-group">
+            <input type="radio" id="seco" name="umidade" value="seco" checked>
+            <label for="seco">Seco</label>
+            <input type="radio" id="umido" name="umidade" value="umido">
+            <label for="umido">Úmido</label>
+          </div>
+
+          <label for="quantidade">Quantidade (kg):</label>
+          <input type="number" id="quantidade" step="0.01" min="0.01" value="1">
+
+          <button id="btnIdentificar" class="btn btn-primary mt-12" disabled>Identificar</button>
         </div>
+
         <div class="loading" id="loadingProcess">
           <div class="spinner"></div>
         </div>
@@ -78,7 +102,7 @@
 
       <!-- Resultado -->
       <section id="resultado" class="screen" role="region" aria-label="Resultado" hidden>
-        <h3>Resultado da IA</h3>
+        <h3>Resultado da Identificação</h3>
         <img id="fotoMostrada" class="foto-preview" alt="Foto do resíduo" src="" aria-hidden="true">
         <p id="tipoLixo" class="dica"></p>
         <p id="lixeira" class="dica"></p>

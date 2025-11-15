@@ -155,8 +155,8 @@ main {
 
 .map {
   width: 100%;
-  height: 40vh; /* Ajustado para ser responsivo com a tela */
-  min-height: 300px; /* Mínimo para não ficar muito pequeno em telas pequenas */
+  height: 40vh;
+  min-height: 300px;
   border-radius: 12px;
   animation: fadeIn 1s ease-in-out;
 }
@@ -192,6 +192,7 @@ main {
   transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
   min-height: var(--touch-min-size);
   min-width: var(--touch-min-size);
+  width: 100%; /* Para botões full width em mobile */
 }
 
 .btn-primary {
@@ -285,7 +286,8 @@ nav.bottom-nav {
 
 .foto-preview {
   width: 100%;
-  height: 220px;
+  height: 40vh;
+  max-height: 400px;
   object-fit: cover;
   border-radius: 12px;
   border: 2px solid var(--border);
@@ -350,8 +352,9 @@ nav.bottom-nav {
 .preview-container {
   position: relative;
   width: 100%;
-  height: 220px; /* Ajustado para combinar com foto-preview */
-  background-color: #000; /* Fallback preto se nada carregar */
+  height: 40vh;
+  max-height: 400px;
+  background-color: #000;
   overflow: hidden;
   border-radius: 12px;
   border: 2px solid var(--border);
@@ -361,8 +364,7 @@ nav.bottom-nav {
 #cameraPreview, #photoPreview {
   width: 100%;
   height: 100%;
-  object-fit: cover; 
-  background-color: #2d523cb5;/* Mantém proporção e cobre o espaço, como background */
+  object-fit: cover;
 }
 
 .loading-preview {
@@ -403,6 +405,9 @@ nav.bottom-nav {
   color: var(--error);
   font-size: 0.9rem;
   margin-top: 8px;
+  padding: 8px;
+  background: rgba(var(--error), 0.1);
+  border-radius: 8px;
 }
 
 .sr-only {
@@ -412,12 +417,13 @@ nav.bottom-nav {
 
 @media (max-width: 420px) {
   .map { height: 30vh; min-height: 240px; }
-  .foto-preview, .preview-container { height: 180px; }
+  .foto-preview, .preview-container { height: 30vh; max-height: 300px; }
   header.appbar { padding: 8px; }
   .title { font-size: 1rem; }
   .btn { font-size: 0.95rem; padding: 10px 12px; }
   nav.bottom-nav { padding-bottom: 8px; }
   .nav-item { min-height: 56px; font-size: 0.85rem; }
+  .button-group { flex-direction: column; align-items: stretch; }
 }
 
 :focus-visible {
@@ -476,4 +482,35 @@ nav.bottom-nav {
 
 .hidden {
   display: none;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group select,
+.form-group input[type="number"] {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.radio-group input {
+  margin-right: 5px;
 }

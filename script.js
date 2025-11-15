@@ -9,17 +9,16 @@ let videoStream = null;
 let imageCapture = null;
 let mapInstance = null;
 
-const hfApiKey = 'your_huggingface_api_key_here'; // Registre-se em huggingface.co e obtenha um token de API. Substitua aqui.
 const maxFileSize = 5 * 1024 * 1024; // 5MB limite
 const targetResolution = { width: 640, height: 480 }; // Resolução otimizada
 
 const residuos = [
-  { tipo: 'Plástico', lixeira: 'Azul', pontos: 10, co2: 0.5, dica: 'Plásticos reciclados economizam energia equivalente a 1 lâmpada por 6h.' },
-  { tipo: 'Papel', lixeira: 'Amarelo', pontos: 5, co2: 0.2, dica: 'Reciclar papel salva árvores e reduz CO₂.' },
-  { tipo: 'Orgânico', lixeira: 'Marrom', pontos: 8, co2: 0.3, dica: 'Orgânicos compostados viram adubo e evitam metano.' },
-  { tipo: 'Vidro', lixeira: 'Verde', pontos: 7, co2: 0.4, dica: 'Vidro é 100% reciclável e infinito.' },
-  { tipo: 'Metal', lixeira: 'Cinza', pontos: 9, co2: 0.6, dica: 'Reciclar metal economiza mineração e energia.' },
-  { tipo: 'Eletrônicos', lixeira: 'Vermelho', pontos: 15, co2: 1.0, dica: 'Eletrônicos reciclados previnem poluição tóxica.' }
+  { tipo: 'Plástico', lixeira: 'Azul', pontos: 10, co2: 2.0, dica: 'Plásticos reciclados economizam energia equivalente a 1 lâmpada por 6h.' },
+  { tipo: 'Papel', lixeira: 'Amarelo', pontos: 5, co2: 1.0, dica: 'Reciclar papel salva árvores e reduz CO₂.' },
+  { tipo: 'Orgânico', lixeira: 'Marrom', pontos: 8, co2: 0.5, dica: 'Orgânicos compostados viram adubo e evitam metano.' },
+  { tipo: 'Vidro', lixeira: 'Verde', pontos: 7, co2: 0.5, dica: 'Vidro é 100% reciclável e infinito.' },
+  { tipo: 'Metal', lixeira: 'Cinza', pontos: 9, co2: 2.0, dica: 'Reciclar metal economiza mineração e energia.' },
+  { tipo: 'Eletrônicos', lixeira: 'Vermelho', pontos: 15, co2: 2.0, dica: 'Eletrônicos reciclados previnem poluição tóxica.' }
 ];
 
 const dicasHome = [
@@ -46,39 +45,36 @@ const pontosColeta = [
   { lat: -20.1780, lng: -40.2510, nome: 'Coleta Ambiental', endereco: 'Rua O, Quadra 16, Lote 13 - São Diogo I, Serra - ES, 29163-269', telefone: '(27) 3328-7001', coleta: 'Todos os tipos de lixo eletrônico' }
 ];
 
-// Função para calcular distância (usando fórmula de Haversine, já que Leaflet distanceTo é em metros)
+// Função para calcular distância (usando fórmula de Haversine)
 function calculateDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371; // Raio da Terra em km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
             Math.sin(dLng / 2) * Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distância em km
+  return R * c;
 }
 
 function initMap() {
-  mapInstance = L.map('map').setView([-20.22, -40.32], 11); // Centro ajustado para cobrir Vitória e Serra
+  mapInstance = L.map('map').setView([-20.22, -40.32], 11);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(mapInstance);
 
-  // Adiciona marcadores para todos os pontos
   const markers = [];
-  const bounds = L.latLngBounds(); // Para ajustar o zoom automaticamente
+  const bounds = L.latLngBounds();
   pontosColeta.forEach(ponto => {
     const latLng = [ponto.lat, ponto.lng];
     const marker = L.marker(latLng).addTo(mapInstance)
       .bindPopup(`<b>${ponto.nome}</b><br>${ponto.coleta}<br>Telefone: ${ponto.telefone}<br>Endereço: ${ponto.endereco}`);
     markers.push({ marker, lat: ponto.lat, lng: ponto.lng, nome: ponto.nome });
-    bounds.extend(latLng); // Adiciona ao bounds
+    bounds.extend(latLng);
   });
 
-  // Ajusta o mapa para mostrar todos os pontos inicialmente
   mapInstance.fitBounds(bounds, { padding: [50, 50] });
 
-  // Função para obter localização do usuário e encontrar o mais próximo
   function getUserLocationAndFindNearest() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -86,12 +82,10 @@ function initMap() {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
 
-          // Adiciona marcador para localização do usuário
           L.marker([userLat, userLng], {
             icon: L.divIcon({ className: 'user-marker', html: '<div style="background: blue; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>' })
           }).addTo(mapInstance).bindPopup('Sua localização atual').openPopup();
 
-          // Encontra o ponto mais próximo
           let nearest = null;
           let minDist = Infinity;
           markers.forEach(m => {
@@ -103,13 +97,10 @@ function initMap() {
           });
 
           if (nearest) {
-            // Destaca o mais próximo com ícone diferente
             nearest.marker.setIcon(L.divIcon({ className: 'nearest-marker', html: '<div style="background: red; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>' }));
             nearest.marker.openPopup();
-            // Centraliza o mapa entre usuário e o mais próximo, incluindo todos os bounds
             const userBounds = bounds.extend([userLat, userLng]);
             mapInstance.fitBounds(userBounds, { padding: [50, 50] });
-            // Atualiza a dica educacional com info do mais próximo
             $('#dicaEducacional').textContent = `Ponto mais próximo: ${nearest.nome} (${minDist.toFixed(2)} km de distância).`;
           }
         },
@@ -124,11 +115,10 @@ function initMap() {
     }
   }
 
-  // Chama a função automaticamente ao iniciar o mapa
   getUserLocationAndFindNearest();
 }
 
-// ===== Helpers (otimizados com caching de DOM) =====
+// ===== Helpers =====
 const $ = sel => document.querySelector(sel);
 const $all = sel => Array.from(document.querySelectorAll(sel));
 
@@ -148,7 +138,7 @@ function showScreen(id) {
   if (id === 'home') {
     if (!mapInstance) initMap();
     else {
-      setTimeout(() => mapInstance.invalidateSize(), 100); // Invalida tamanho se tela foi reexibida
+      setTimeout(() => mapInstance.invalidateSize(), 100);
     }
   }
 }
@@ -169,22 +159,24 @@ function showError(message) {
   const errorEl = $('#errorMessage');
   errorEl.textContent = message;
   errorEl.hidden = false;
+  setTimeout(() => hideError(), 5000); // Auto-esconde após 5s
 }
 
 function hideError() {
   $('#errorMessage').hidden = true;
 }
 
-// Função para mostrar preview de imagem estática
 function showPhotoPreview(blob) {
   const previewUrl = URL.createObjectURL(blob);
   const photoImg = $('#photoPreview');
   photoImg.src = previewUrl;
   photoImg.onload = () => {
-    URL.revokeObjectURL(previewUrl); // Revoga só após carregar, evita timing issues
-    $('#cameraPreview').classList.add('hidden'); // Esconde vídeo
-    photoImg.classList.remove('hidden'); // Mostra imagem
-    $('#loadingPreview').classList.add('hidden'); // Esconde spinner
+    URL.revokeObjectURL(previewUrl);
+    $('#cameraPreview').classList.add('hidden');
+    photoImg.classList.remove('hidden');
+    $('#loadingPreview').classList.add('hidden');
+    $('#residueForm').classList.remove('hidden'); // Mostra form após preview
+    $('#btnIdentificar').disabled = false;
   };
   photoImg.onerror = () => {
     showError('Erro ao carregar preview da imagem.');
@@ -204,16 +196,14 @@ async function startCamera() {
     });
     const cameraVid = $('#cameraPreview');
     cameraVid.srcObject = videoStream;
-    cameraVid.onloadedmetadata = () => cameraVid.play(); // Garante play após metadata
+    cameraVid.onloadedmetadata = () => cameraVid.play();
     const track = videoStream.getVideoTracks()[0];
     imageCapture = new ImageCapture(track);
-    $('#btnProcessar').disabled = false;
     $('#btnStartCamera').disabled = true;
-    $('#photoPreview').classList.add('hidden'); // Esconde preview de imagem se estava visível
-    cameraVid.classList.remove('hidden'); // Mostra vídeo
+    $('#photoPreview').classList.add('hidden');
+    cameraVid.classList.remove('hidden');
   } catch (err) {
-    showError(err.name === 'NotAllowedError' ? 'Permissão para câmera negada. Use seleção de arquivo.' : 'Não foi possível acessar a câmera. Tente novamente ou use arquivo.');
-    $('#btnProcessar').disabled = true;
+    showError(err.name === 'NotAllowedError' ? 'Permissão para câmera negada. Por favor, permita o acesso ou use a seleção de arquivo.' : 'Não foi possível acessar a câmera. Verifique se outra app está usando ou use arquivo.');
   }
 }
 
@@ -225,14 +215,15 @@ function stopCamera() {
     $('#cameraPreview').srcObject = null;
     $('#btnStartCamera').disabled = false;
   }
-  // Limpa previews ao parar
   $('#photoPreview').src = '';
   $('#photoPreview').classList.add('hidden');
   $('#cameraPreview').classList.remove('hidden');
+  $('#residueForm').classList.add('hidden');
+  $('#btnIdentificar').disabled = true;
 }
 
 async function captureImage() {
-  $('#loadingPreview').classList.remove('hidden'); // Mostra spinner
+  $('#loadingPreview').classList.remove('hidden');
   if (imageCapture) {
     try {
       const blob = await imageCapture.takePhoto();
@@ -242,7 +233,6 @@ async function captureImage() {
       return null;
     }
   }
-  // Fallback canvas
   const video = $('#cameraPreview');
   const canvas = $('#compressCanvas');
   canvas.width = video.videoWidth;
@@ -251,7 +241,7 @@ async function captureImage() {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
       if (blob) resolve(blob);
-      else reject(new Error('Falha no fallback de captura.'));
+      else reject(new Error('Falha na captura.'));
     }, 'image/jpeg', 0.8);
   });
 }
@@ -272,58 +262,43 @@ async function compressImage(blob) {
   });
 }
 
-// ===== Processamento de imagem (com IA real via Hugging Face) =====
-async function processarFoto() {
-  if (!fotoSelecionada) return showError('Selecione ou capture uma foto antes.');
+// ===== Processamento manual =====
+async function identificarResiduo() {
+  if (!fotoSelecionada) return showError('Por favor, tire ou selecione uma foto antes de identificar.');
 
   const loadingEl = $('#loadingProcess');
   loadingEl.classList.add('visible');
-  $('#btnProcessar').disabled = true;
+
+  const tipoIdx = parseInt($('#tipoResiduo').value);
+  const umidade = document.querySelector('input[name="umidade"]:checked')?.value;
+  const quantidade = parseFloat($('#quantidade').value);
+
+  if (isNaN(quantidade) || quantidade <= 0) return showError('Quantidade deve ser um número positivo.');
+
+  const res = residuos[tipoIdx];
+  const isOrganico = res.tipo === 'Orgânico';
+
+  if ((isOrganico && umidade !== 'umido') || (!isOrganico && umidade !== 'seco')) {
+    loadingEl.classList.remove('visible');
+    return showError('A umidade selecionada é incompatível com o tipo de resíduo. Orgânicos são úmidos, os outros são secos.');
+  }
 
   const compressedBlob = await compressImage(fotoSelecionada);
   const previewUrl = URL.createObjectURL(compressedBlob);
   $('#fotoMostrada').src = previewUrl;
-  URL.revokeObjectURL(previewUrl); // Limpa imediatamente após uso
+  URL.revokeObjectURL(previewUrl);
 
-  if (hfApiKey === 'your_huggingface_api_key_here' || !hfApiKey) {
-    // Simulação
-    resultadoAtual = residuos[Math.floor(Math.random() * residuos.length)];
-    atualizarResultado();
-    loadingEl.classList.remove('visible');
-    $('#btnProcessar').disabled = false;
-    showScreen('resultado');
-  } else {
-    try {
-      const response = await fetch('https://api-inference.huggingface.co/models/yangy50/garbage-classification', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${hfApiKey}`,
-          'Content-Type': compressedBlob.type
-        },
-        body: compressedBlob
-      });
+  resultadoAtual = {
+    ...res,
+    pontos: Math.round(res.pontos * quantidade),
+    co2: parseFloat((res.co2 * quantidade).toFixed(2))
+  };
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const result = await response.json();
-      if (result.error) throw new Error(result.error);
-
-      const topLabel = result[0].label.toLowerCase();
-      const mapping = { plastic: 0, paper: 1, cardboard: 1, trash: 2, glass: 3, metal: 4 };
-      const index = mapping[topLabel] ?? Math.floor(Math.random() * residuos.length);
-      resultadoAtual = residuos[index];
-      atualizarResultado();
-      showScreen('resultado');
-    } catch (err) {
-      showError('Erro no processamento com IA: ' + err.message + '. Usando simulação.');
-      resultadoAtual = residuos[Math.floor(Math.random() * residuos.length)];
-      atualizarResultado();
-      showScreen('resultado');
-    } finally {
-      loadingEl.classList.remove('visible');
-      $('#btnProcessar').disabled = false;
-      fotoSelecionada = null;
-    }
-  }
+  atualizarResultado();
+  loadingEl.classList.remove('visible');
+  showScreen('resultado');
+  fotoSelecionada = null;
+  stopCamera(); // Limpa após processar
 }
 
 function atualizarResultado() {
@@ -350,7 +325,7 @@ function confirmarDescarte() {
   showScreen('recompensa');
 }
 
-// ===== Confetti otimizado (reduzido para 40 peças) =====
+// ===== Confetti =====
 function criarConfete() {
   const container = $('#confetti');
   container.innerHTML = '';
@@ -377,7 +352,6 @@ function atualizarPerfil() {
   $('#totalPontos').textContent = pontosTotais;
   $('#totalCO2').textContent = co2Total.toFixed(2);
 
-  // Agrupa últimos 6 meses
   const dadosPorMes = {};
   const labels = [];
   const hoje = new Date();
@@ -431,28 +405,22 @@ function resetarDados() {
 
 // ===== Init / UI wiring =====
 document.addEventListener('DOMContentLoaded', () => {
-  // Cache de elementos frequentes
   const dicaEducacional = $('#dicaEducacional');
   dicaEducacional.textContent = dicasHome[Math.floor(Math.random() * dicasHome.length)];
 
-  // Nav clicks
   $all('.nav-item').forEach(item => item.addEventListener('click', () => showScreen(item.dataset.target)));
 
-  // Header buttons
   $('#toggleTheme').addEventListener('click', () => {
     document.documentElement.classList.toggle('light-mode');
     localStorage.setItem('lightMode', document.documentElement.classList.contains('light-mode'));
     if (!$('#graficoCO2').closest('section').hidden) atualizarPerfil();
   });
 
-  // Load saved pref
   if (localStorage.getItem('lightMode') === 'true') document.documentElement.classList.add('light-mode');
 
-  // Home actions
   $('#btnOpenCamera').addEventListener('click', () => showScreen('camera'));
   $('#btnOpenPerfil').addEventListener('click', () => showScreen('perfil'));
 
-  // Camera actions
   $('#btnStartCamera').addEventListener('click', startCamera);
   $('#btnSelectFile').addEventListener('click', () => $('#fotoInput').click());
   $('#fotoInput').addEventListener('change', async (e) => {
@@ -461,12 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file.type.startsWith('image/')) return showError('Arquivo não é uma imagem válida.');
     if (file.size > maxFileSize) return showError('Arquivo muito grande (máx 5MB). Selecione uma menor.');
     hideError();
-    $('#loadingPreview').classList.remove('hidden'); // Mostra spinner
+    $('#loadingPreview').classList.remove('hidden');
     try {
       fotoSelecionada = await compressImage(file);
       if (fotoSelecionada) {
-        showPhotoPreview(fotoSelecionada); // Mostra preview estática
-        $('#btnProcessar').disabled = false;
+        showPhotoPreview(fotoSelecionada);
       }
     } catch (err) {
       showError('Erro ao comprimir imagem: ' + err.message);
@@ -474,34 +441,51 @@ document.addEventListener('DOMContentLoaded', () => {
       $('#loadingPreview').classList.add('hidden');
     }
   });
-  $('#btnProcessar').addEventListener('click', async () => {
-    if (videoStream && !fotoSelecionada) {
+
+  // Captura foto se câmera ativa
+  $('#btnStartCamera').addEventListener('click', startCamera); // Já tem
+
+  // Novo botão identificar
+  $('#btnIdentificar').addEventListener('click', identificarResiduo);
+
+  // Para capturar foto: adicionar botão "Capturar" se câmera ativa?
+  // Para simplificar, adicionar botão Capturar após iniciar câmera.
+
+  const btnCapturar = document.createElement('button');
+  btnCapturar.id = 'btnCapturar';
+  btnCapturar.className = 'btn btn-primary';
+  btnCapturar.textContent = 'Capturar Foto';
+  btnCapturar.disabled = true;
+  $('#btnStartCamera').after(btnCapturar);
+
+  btnCapturar.addEventListener('click', async () => {
+    if (videoStream) {
       const capturedBlob = await captureImage();
       if (capturedBlob) {
         $('#loadingPreview').classList.remove('hidden');
         fotoSelecionada = await compressImage(capturedBlob);
         showPhotoPreview(fotoSelecionada);
         $('#loadingPreview').classList.add('hidden');
-      } else {
-        return; // Erro já mostrado em captureImage
       }
     }
-    if (fotoSelecionada) processarFoto();
   });
 
-  // Resultado actions
+  // Habilitar capturar após iniciar câmera
+  const originalStartCamera = startCamera;
+  startCamera = async () => {
+    await originalStartCamera();
+    btnCapturar.disabled = false;
+  };
+
   $('#btnResultadoVoltar').addEventListener('click', () => showScreen('home'));
   $('#btnConfirmar').addEventListener('click', confirmarDescarte);
 
-  // Recompensa
   $('#btnVerPerfil').addEventListener('click', () => showScreen('perfil'));
   $('#btnRecompensaHome').addEventListener('click', () => showScreen('home'));
 
-  // Perfil
   $('#btnPerfilHome').addEventListener('click', () => showScreen('home'));
   $('#btnReset').addEventListener('click', resetarDados);
 
-  // Start at home
   showScreen('home');
   atualizarPerfil();
 });
