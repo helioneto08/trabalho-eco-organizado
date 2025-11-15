@@ -424,7 +424,7 @@ nav.bottom-nav {
   nav.bottom-nav { padding-bottom: 8px; }
   .nav-item { min-height: 56px; font-size: 0.85rem; }
   .button-group { flex-direction: column; align-items: stretch; }
-  h3.screen{margin-top: 108px;}
+  h3.screen{margin-top: 150px;}
   
 }
 
