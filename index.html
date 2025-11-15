@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoLixo — Mobile (otimizado)</title>
+  <meta name="description" content="Simulador EcoLixo — reconhecimento de resíduo, recompensas e monitor de impacto.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4caf50"> <!-- Corrigido: adicionado name="theme-color" -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="appbar">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="var(--accent)" />
+          <path d="M8 13c1.8-3 6-4 7-2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="title-container">
+        <div class="title">EcoLixo</div>
+        <div class="subtitle">Simulador de coleta inteligente</div>
+      </div>
+      <div class="header-buttons">
+        <button id="toggleTheme" class="btn btn-tiny btn-ghost" title="Alternar tema">🌗</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Home Screen -->
+      <section id="home" class="screen visible" role="region" aria-label="Home">
+        <div class="card">
+          <div id="map" class="map"></div>
+          <div class="dica" id="dicaEducacional">Dica: carregando...</div>
+        </div>
+        <div class="button-group column">
+          <button class="btn btn-primary" id="btnOpenCamera">📸 Reconhecer Resíduo</button>
+          <button class="btn btn-ghost" id="btnOpenPerfil">📊 Ver Meu Impacto</button>
+        </div>
+      </section>
+
+      <!-- Camera / Upload Screen -->
+      <section id="camera" class="screen" role="region" aria-label="Camera" hidden>
+        <h3>Simule a foto do resíduo</h3>
+        <p class="dica">Use a câmera ou selecione uma foto. O processamento usa IA real via Hugging Face se a chave API for configurada, caso contrário, simula localmente.</p>
+        
+        <!-- Contêiner para preview (vídeo ou imagem) -->
+        <div class="preview-container">
+          <video id="cameraPreview" autoplay playsinline></video> <!-- Adicionado playsinline para compatibilidade mobile -->
+          <img id="photoPreview" class="hidden" alt="Preview da foto selecionada ou capturada">
+          <div class="loading-preview hidden" id="loadingPreview"> <!-- Spinner para compressão -->
+            <div class="spinner"></div>
+            <p>Carregando preview...</p>
+          </div>
+        </div>
+        
+        <div class="button-group mb-12">
+          <button id="btnStartCamera" class="btn btn-primary" aria-label="Iniciar câmera">Iniciar Câmera</button>
+          <input type="file" id="fotoInput" accept="image/*" class="hidden" aria-label="Selecionar arquivo de imagem">
+          <button id="btnSelectFile" class="btn btn-ghost" aria-label="Selecionar arquivo">Selecionar Arquivo</button>
+        </div>
+        <div class="button-group mt-12">
+          <button id="btnProcessar" class="btn btn-primary" disabled aria-label="Processar imagem com IA">Processar com IA</button>
+        </div>
+        <div class="loading" id="loadingProcess">
+          <div class="spinner"></div>
+        </div>
+        <p id="errorMessage" class="error" hidden></p>
+      </section>
+
+      <!-- Resultado -->
+      <section id="resultado" class="screen" role="region" aria-label="Resultado" hidden>
+        <h3>Resultado da IA</h3>
+        <img id="fotoMostrada" class="foto-preview" alt="Foto do resíduo" src="" aria-hidden="true">
+        <p id="tipoLixo" class="dica"></p>
+        <p id="lixeira" class="dica"></p>
+        <p id="dicaResultado" class="dica"></p>
+        <div class="button-group mt-12">
+          <button id="btnConfirmar" class="btn btn-primary">Confirmar descarte</button>
+          <button id="btnResultadoVoltar" class="btn btn-ghost">Voltar</button>
+        </div>
+      </section>
+
+      <!-- Recompensa -->
+      <section id="recompensa" class="screen" role="region" aria-label="Recompensa" hidden>
+        <h3>Parabéns! 🎉</h3>
+        <div class="card">
+          <div id="pontosTexto" class="num"></div>
+          <div id="co2Texto" class="dica"></div>
+        </div>
+        <div class="button-group mt-12">
+          <button id="btnVerPerfil" class="btn btn-primary">Ver impacto</button>
+          <button id="btnRecompensaHome" class="btn btn-ghost">Voltar à Home</button>
+        </div>
+      </section>
+
+      <!-- Perfil -->
+      <section id="perfil" class="screen" role="region" aria-label="Perfil" hidden>
+        <h3>Seu Impacto Ambiental</h3>
+        <div class="chart-container">
+          <canvas id="graficoCO2" aria-label="Gráfico CO2"></canvas>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="num" id="totalCO2">0</div>
+            <div class="dica">kg CO₂ evitado</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="totalPontos">0</div>
+            <div class="dica">pontos</div>
+          </div>
+        </div>
+        <div class="button-group mt-12">
+          <button id="btnReset" class="btn btn-ghost">Resetar dados</button>
+          <button id="btnPerfilHome" class="btn btn-ghost">Voltar</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Confetti container -->
+    <div id="confetti" aria-hidden="true"></div>
+
+    <!-- Bottom navigation (sempre visível) -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegação principal">
+      <div class="nav-item active" data-target="home" id="navHome" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="dica">Home</span>
+      </div>
+      <div class="nav-item" data-target="camera" id="navCamera">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h4l2-2h4l2 2h4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="dica">Foto</span>
+      </div>
+      <div class="nav-item" data-target="perfil" id="navPerfil">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="dica">Perfil</span>
+      </div>
+    </nav>
+
+    <!-- Hidden canvas for image compression only -->
+    <canvas id="compressCanvas" class="hidden"></canvas>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
